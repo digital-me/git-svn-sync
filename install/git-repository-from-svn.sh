@@ -1,4 +1,4 @@
-# -*- mode: Shell-script-*-
+ # -*- mode: Shell-script-*-
 #!/usr/bin/bash
 #
 # Author: Mario Fernandez
@@ -29,6 +29,8 @@ fi
 : ${GIT_SVN_LAYOUT:="--stdlayout"}
 [ -z "${GIT_SVN_AUTHORS}" ] || GIT_SVN_AUTHORS="--authors-file=${GIT_SVN_AUTHORS}"
 : ${GIT_HOOK_CMD:="ln -s"}
+: ${GIT_SVN_REMOTE:="svn"}
+: ${GIT_PUSH:=1}
 
 project="${1?No project name provided}"
 svn_url="${2?No svn url provided}"
@@ -41,10 +43,53 @@ if [ -d "$client" ] ; then
 fi
 
 # Sync client
-git svn clone "${GIT_SVN_LAYOUT}" "${GIT_SVN_AUTHORS}" "${svn_url}" "${client}" || { echo "Could not clone svn repository at ${svn_url} in ${client}" ; exit 1; }
+git svn clone ${GIT_SVN_LAYOUT} ${GIT_SVN_AUTHORS} --prefix "${GIT_SVN_REMOTE}/" "${svn_url}" "${client}" \
+    || { echo "Could not clone svn repository at ${svn_url} in ${client}" ; exit 1; }
 
 cd "${client}"
+
+# Convert SVN tags and branches for remote Git
+git for-each-ref --format="%(refname:short) %(objectname)" refs/remotes/${GIT_SVN_REMOTE} \
+| while read BRANCH REF
+do
+    NAME=${BRANCH##*/}
+    BODY="$(git log -1 --format=format:%B $REF)"
+
+    echo "ref=$REF parent=$(git rev-parse $REF^) name=$NAME body=$BODY" >&2
+
+    # Ignore branches with revision suffix
+    # TODO: Implement an ignore regexp option
+    if ! [[ $NAME =~ ^.+@[0-9]+$ ]]; then
+        case ${BRANCH#*/} in
+        tags/*)
+            echo "Converting tag $NAME as local Git tag..."
+            git tag -a -m "$BODY" $NAME $REF^ \
+            || { echo "Could not convert tag $NAME" ; exit 1; }
+            ;;
+        trunk)
+            echo "Preserving the trunk"
+            ;;
+        *)
+            echo "Copying branch $NAME as local Git branch..."
+            git branch $NAME $BRANCH \
+            || { echo "Could not convert branch $NAME" ; exit 1; }
+            ;;
+        esac
+    fi
+    # Delete all svn branches, but trunk
+    if ! [[ $NAME =~ ^trunk$ ]]; then
+        git branch -r -d $BRANCH \
+        || { echo "Could not delete branch $NAME" ; exit 1; }
+    fi
+done
+
+# Add the remote Git repo and push if requested
 git remote add origin ${git_url} || { echo "Could not set up server as remote from sync" ; exit 1; }
+if [ ${GIT_PUSH} -eq 1 ]; then
+    git push --all
+    git push --tags
+fi
+
 git branch ${GIT_SVN_SYNC_BRANCH} || { echo "Could not create svn sync branch" ; exit 1; }
 
 for hook in pre-receive pre-commit ; do
