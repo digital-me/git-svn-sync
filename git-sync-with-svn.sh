@@ -44,6 +44,10 @@ if [ ! -d "$location" ] ; then
     exit 1
 fi
 
+# Prepare user and password prefix/option if required
+[ -z "${GIT_SVN_USER}" ] || GIT_SVN_USER_OPT="--username ${GIT_SVN_USER}"
+[ -z "${GIT_SVN_PASS}" ] || GIT_SVN_PASS_CMD="echo \"${GIT_SVN_PASS}\" | "
+
 unset GIT_DIR
 cd "$location"
 
@@ -67,8 +71,8 @@ git pull --ff-only origin master || { report "Could not pull changes from git re
 echo "Synchronizing with SVN"
 git checkout ${GIT_SVN_SYNC_BRANCH} || { report "Could not switch to sync branch" ; exit 1; }
 echo "Pulling any SVN changes"
-git svn rebase
+${GIT_SVN_PASS_CMD}git svn rebase ${GIT_SVN_USER_OPT}
 # In case of conflicts, take the master, as we are sure that this is
 # the correct branch
 git merge -Xtheirs master || { report "Could not merge changes into sync branch" ; exit 1; }
-git svn dcommit || { report "Could not send changes to svn repository" ; exit 1; }
+${GIT_SVN_PASS_CMD}git svn dcommit ${GIT_SVN_USER_OPT} || { report "Could not send changes to svn repository" ; exit 1; }
