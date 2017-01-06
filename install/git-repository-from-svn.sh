@@ -17,7 +17,7 @@
 # - GIT_SVN_LAYOUT: SVN layout options to override (default --stdlayout)
 # - GIT_SVN_AUTHORS: authors-file option (default none)
 #  - GIT_SVN_USER: SVN username to overwrite the configuration property.
-#  - GIT_SVN_PASS: SVN password to overwrite the configuration property.
+#  - GIT_SVN_PASSWORD: SVN password to overwrite the configuration property.
 #
 # Usage: git-repository-from-svn.sh project svn_url git_url
 
@@ -34,7 +34,7 @@ fi
 : ${GIT_SVN_REMOTE:="svn"}
 : ${GIT_PUSH:=1}
 : ${GIT_SVN_USER:=""}
-: ${GIT_SVN_PASS:=""}
+: ${GIT_SVN_PASSWORD:=""}
 
 
 project="${1?No project name provided}"
@@ -47,12 +47,12 @@ if [ -d "$client" ] ; then
     exit 1
 fi
 
-# Prepare user and password prefix/option if required
+# Prepare user option if required
 [ -z "${GIT_SVN_USER}" ] || GIT_SVN_USER_OPT="--username ${GIT_SVN_USER}"
-[ -z "${GIT_SVN_PASS}" ] || GIT_SVN_PASS_CMD="echo \"${GIT_SVN_PASS}\" | "
 
 # Sync client
-${GIT_SVN_PASS_CMD}git svn clone ${GIT_SVN_USER_OPT} ${GIT_SVN_LAYOUT} ${GIT_SVN_AUTHORS} --prefix "${GIT_SVN_REMOTE}/" "${svn_url}" "${client}" \
+{ [ -z "${GIT_SVN_PASSWORD}" ] || echo "${GIT_SVN_PASSWORD}"; } | \
+git svn clone ${GIT_SVN_USER_OPT} ${GIT_SVN_LAYOUT} ${GIT_SVN_AUTHORS} --prefix "${GIT_SVN_REMOTE}/" "${svn_url}" "${client}" \
     || { echo "Could not clone svn repository at ${svn_url} in ${client}" ; exit 1; }
 
 cd "${client}"
