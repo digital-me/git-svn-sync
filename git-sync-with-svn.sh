@@ -24,6 +24,8 @@
 #  - GIT_SVN_SYNC_EMAIL: email to send error reports to
 #  - GIT_SVN_SYNC_BRANCH: name of the branch that is synchronized with
 # subversion (default = svn-sync).
+#  - GIT_SVN_USER: SVN username to overwrite the configuration property.
+#  - GIT_SVN_PASS: SVN password to overwrite the configuration property.
 #
 # Usage: git-sync-with-svn.sh project_name
 
@@ -34,6 +36,8 @@ fi
 
 # Set optional variables
 : ${GIT_SVN_SYNC_BRANCH:="svn-sync"}
+: ${GIT_SVN_USER:=""}
+: ${GIT_SVN_PASS:=""}
 
 destination="${GIT_SVN_SYNC_EMAIL}"
 project="${1?No project provided}"
