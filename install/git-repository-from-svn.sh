@@ -31,6 +31,9 @@ fi
 : ${GIT_HOOK_CMD:="ln -s"}
 : ${GIT_SVN_REMOTE:="svn"}
 : ${GIT_PUSH:=1}
+: ${GIT_SVN_USER:=""}
+: ${GIT_SVN_PASS:=""}
+
 
 project="${1?No project name provided}"
 svn_url="${2?No svn url provided}"
@@ -42,8 +45,12 @@ if [ -d "$client" ] ; then
     exit 1
 fi
 
+# Prepare user and password prefix/option if required
+[ -z "${GIT_SVN_USER}" ] || GIT_SVN_USER_OPT="--username ${GIT_SVN_USER}"
+[ -z "${GIT_SVN_PASS}" ] || GIT_SVN_PASS_CMD="echo \"${GIT_SVN_PASS}\" | "
+
 # Sync client
-git svn clone ${GIT_SVN_LAYOUT} ${GIT_SVN_AUTHORS} --prefix "${GIT_SVN_REMOTE}/" "${svn_url}" "${client}" \
+${GIT_SVN_PASS_CMD}git svn clone ${GIT_SVN_USER_OPT} ${GIT_SVN_LAYOUT} ${GIT_SVN_AUTHORS} --prefix "${GIT_SVN_REMOTE}/" "${svn_url}" "${client}" \
     || { echo "Could not clone svn repository at ${svn_url} in ${client}" ; exit 1; }
 
 cd "${client}"
