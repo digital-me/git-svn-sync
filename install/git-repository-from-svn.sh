@@ -16,6 +16,8 @@
 # subversion (default = svn-sync).
 # - GIT_SVN_LAYOUT: SVN layout options to override (default --stdlayout)
 # - GIT_SVN_AUTHORS: authors-file option (default none)
+#  - GIT_SVN_USER: SVN username to overwrite the configuration property.
+#  - GIT_SVN_PASS: SVN password to overwrite the configuration property.
 #
 # Usage: git-repository-from-svn.sh project svn_url git_url
 
