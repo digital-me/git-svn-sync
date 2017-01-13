@@ -27,6 +27,7 @@
 # subversion (default = svn-sync).
 #  - GIT_SVN_USER: SVN username to overwrite the configuration property.
 #  - GIT_SVN_PASSWORD: SVN password to overwrite the configuration property.
+#  - GIT_SVN_VERBOSE: Set to 1 to decrease and 0 to silent Git SVN command verbosity (default 2).
 #
 # Usage: git-sync-with-svn.sh project_name
 
@@ -40,6 +41,7 @@ fi
 [ -z "${GIT_SVN_AUTHORS}" ] || GIT_SVN_AUTHORS="--authors-file=${GIT_SVN_AUTHORS} --add-author-from --use-log-author"
 : ${GIT_SVN_USER:=""}
 : ${GIT_SVN_PASSWORD:=""}
+: ${GIT_SVN_VERBOSE:=2}
 
 destination="${GIT_SVN_SYNC_EMAIL}"
 project="${1?No project provided}"
@@ -52,6 +54,10 @@ fi
 
 # Prepare user option if required
 [ -z "${GIT_SVN_USER}" ] || GIT_SVN_USER_OPT="--username ${GIT_SVN_USER}"
+
+# Set verbosity if required
+[ ${GIT_SVN_VERBOSE} -eq 2 ] GIT_SVN_VOPT="--verbose"
+[ ${GIT_SVN_VERBOSE} -eq 0 ] GIT_SVN_VOPT="--quiet"
 
 unset GIT_DIR
 cd "$location"
@@ -77,9 +83,9 @@ echo "Synchronizing with SVN"
 git checkout ${GIT_SVN_SYNC_BRANCH} || { report "Could not switch to sync branch" ; exit 1; }
 echo "Pulling any SVN changes"
 { [ -z "${GIT_SVN_PASSWORD}" ] || echo "${GIT_SVN_PASSWORD}"; } | \
-git svn rebase ${GIT_SVN_AUTHORS} ${GIT_SVN_USER_OPT}
+git svn rebase ${GIT_SVN_AUTHORS} ${GIT_SVN_USER_OPT} ${GIT_SVN_VOPT} || { report "Could not rebase SVN changes" ; exit 1; }
 # In case of conflicts, take the master, as we are sure that this is
 # the correct branch
 git merge -Xtheirs master || { report "Could not merge changes into sync branch" ; exit 1; }
 { [ -z "${GIT_SVN_PASSWORD}" ] || echo "${GIT_SVN_PASSWORD}"; } | \
-git svn dcommit ${GIT_SVN_AUTHORS} ${GIT_SVN_USER_OPT} || { report "Could not send changes to svn repository" ; exit 1; }
+git svn dcommit ${GIT_SVN_AUTHORS} ${GIT_SVN_USER_OPT} ${GIT_SVN_VOPT} || { report "Could not send changes to svn repository" ; exit 1; }
