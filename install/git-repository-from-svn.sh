@@ -12,10 +12,10 @@
 # stored.
 #
 # Optional environment variables:
-# - GIT_SVN_SYNC_BRANCH: name of the branch that is synchronized with
+#  - GIT_SVN_SYNC_BRANCH: name of the branch that is synchronized with
 # subversion (default = svn-sync).
-# - GIT_SVN_LAYOUT: SVN layout options to override (default --stdlayout)
-# - GIT_SVN_AUTHORS: authors-file option (default none)
+#  - GIT_SVN_LAYOUT: SVN layout options to override (default --stdlayout)
+#  - GIT_SVN_AUTHORS: authors-file option (default none)
 #  - GIT_SVN_USER: SVN username to overwrite the configuration property.
 #  - GIT_SVN_PASSWORD: SVN password to overwrite the configuration property.
 #
@@ -29,7 +29,7 @@ fi
 # Set optional variables
 : ${GIT_SVN_SYNC_BRANCH:="svn-sync"}
 : ${GIT_SVN_LAYOUT:="--stdlayout"}
-[ -z "${GIT_SVN_AUTHORS}" ] || GIT_SVN_AUTHORS="--authors-file=${GIT_SVN_AUTHORS}"
+[ -z "${GIT_SVN_AUTHORS}" ] || GIT_SVN_AUTHORS="--authors-file=${GIT_SVN_AUTHORS} --add-author-from --use-log-author"
 : ${GIT_HOOK_CMD:="ln -s"}
 : ${GIT_SVN_REMOTE:="svn"}
 : ${GIT_PUSH:=1}
@@ -48,7 +48,7 @@ if [ -d "$client" ] ; then
 fi
 
 # Prepare user option if required
-[ -z "${GIT_SVN_USER}" ] || GIT_SVN_USER_OPT="--username ${GIT_SVN_USER}"
+[ -z "${GIT_SVN_USER}" ] || GIT_SVN_USER_OPT="--username ${GIT_SVN_USER} --no-auth-cache"
 
 # Sync client
 { [ -z "${GIT_SVN_PASSWORD}" ] || echo "${GIT_SVN_PASSWORD}"; } | \

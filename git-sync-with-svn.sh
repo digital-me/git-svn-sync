@@ -23,6 +23,7 @@
 # Optional environment variables:
 #  - GIT_SVN_SYNC_EMAIL: email to send error reports to
 #  - GIT_SVN_SYNC_BRANCH: name of the branch that is synchronized with
+#  - GIT_SVN_AUTHORS: authors-file option (default none)
 # subversion (default = svn-sync).
 #  - GIT_SVN_USER: SVN username to overwrite the configuration property.
 #  - GIT_SVN_PASSWORD: SVN password to overwrite the configuration property.
@@ -36,6 +37,7 @@ fi
 
 # Set optional variables
 : ${GIT_SVN_SYNC_BRANCH:="svn-sync"}
+[ -z "${GIT_SVN_AUTHORS}" ] || GIT_SVN_AUTHORS="--authors-file=${GIT_SVN_AUTHORS} --add-author-from --use-log-author"
 : ${GIT_SVN_USER:=""}
 : ${GIT_SVN_PASSWORD:=""}
 
@@ -75,9 +77,9 @@ echo "Synchronizing with SVN"
 git checkout ${GIT_SVN_SYNC_BRANCH} || { report "Could not switch to sync branch" ; exit 1; }
 echo "Pulling any SVN changes"
 { [ -z "${GIT_SVN_PASSWORD}" ] || echo "${GIT_SVN_PASSWORD}"; } | \
-git svn rebase ${GIT_SVN_USER_OPT}
+git svn rebase ${GIT_SVN_AUTHORS} ${GIT_SVN_USER_OPT}
 # In case of conflicts, take the master, as we are sure that this is
 # the correct branch
 git merge -Xtheirs master || { report "Could not merge changes into sync branch" ; exit 1; }
 { [ -z "${GIT_SVN_PASSWORD}" ] || echo "${GIT_SVN_PASSWORD}"; } | \
-git svn dcommit ${GIT_SVN_USER_OPT} || { report "Could not send changes to svn repository" ; exit 1; }
+git svn dcommit ${GIT_SVN_AUTHORS} ${GIT_SVN_USER_OPT} || { report "Could not send changes to svn repository" ; exit 1; }
