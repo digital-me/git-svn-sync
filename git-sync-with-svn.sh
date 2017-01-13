@@ -56,8 +56,8 @@ fi
 [ -z "${GIT_SVN_USER}" ] || GIT_SVN_USER_OPT="--username ${GIT_SVN_USER}"
 
 # Set verbosity if required
-[ ${GIT_SVN_VERBOSE} -eq 2 ] GIT_SVN_VOPT="--verbose"
-[ ${GIT_SVN_VERBOSE} -eq 0 ] GIT_SVN_VOPT="--quiet"
+[ ${GIT_SVN_VERBOSE} -eq 2 ] && GIT_SVN_VOPT="--verbose"
+[ ${GIT_SVN_VERBOSE} -eq 0 ] && GIT_SVN_VOPT="--quiet"
 
 unset GIT_DIR
 cd "$location"
