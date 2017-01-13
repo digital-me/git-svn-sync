@@ -87,5 +87,5 @@ git svn rebase ${GIT_SVN_AUTHORS} ${GIT_SVN_USER_OPT} ${GIT_SVN_VOPT} || { repor
 # In case of conflicts, take the master, as we are sure that this is
 # the correct branch
 git merge -Xtheirs master || { report "Could not merge changes into sync branch" ; exit 1; }
-{ [ -z "${GIT_SVN_PASSWORD}" ] || echo "${GIT_SVN_PASSWORD}"; } | \
+{ [ -z "${GIT_SVN_PASSWORD}" ] || for n in {1..3}; do echo "${GIT_SVN_PASSWORD}"; done; } | \
 git svn dcommit ${GIT_SVN_AUTHORS} ${GIT_SVN_USER_OPT} ${GIT_SVN_VOPT} || { report "Could not send changes to svn repository" ; exit 1; }
