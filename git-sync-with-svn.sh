@@ -76,16 +76,15 @@ if [ -n "$(git status --porcelain)" ] ; then
     exit 1
 fi
 
+echo "Pull Git changes"
 git pull --ff-only origin master || { report "Could not pull changes from git repository" ; exit 1; }
 
-# Synchronize with SVN
-echo "Synchronizing with SVN"
+echo "Switch to SVN branch"
 git checkout ${GIT_SVN_SYNC_BRANCH} || { report "Could not switch to sync branch" ; exit 1; }
-echo "Pulling any SVN changes"
-{ [ -z "${GIT_SVN_PASSWORD}" ] || echo "${GIT_SVN_PASSWORD}"; } | \
-git svn rebase ${GIT_SVN_AUTHORS} ${GIT_SVN_USER_OPT} ${GIT_SVN_VOPT} || { report "Could not rebase SVN changes" ; exit 1; }
-# In case of conflicts, take the master, as we are sure that this is
-# the correct branch
-git merge -Xtheirs master || { report "Could not merge changes into sync branch" ; exit 1; }
+
+echo "Apply Git changes on top of SVN branch"
+git rebase -m -Xtheirs master || { report "Could not rebase Git changes onto SVN" ; exit 1; }
+
+echo "Commit result in SVN repository"
 { [ -z "${GIT_SVN_PASSWORD}" ] || for n in {1..3}; do echo "${GIT_SVN_PASSWORD}"; done; } | \
 git svn dcommit ${GIT_SVN_AUTHORS} ${GIT_SVN_USER_OPT} ${GIT_SVN_VOPT} || { report "Could not send changes to svn repository" ; exit 1; }
