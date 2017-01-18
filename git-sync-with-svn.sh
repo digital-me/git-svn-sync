@@ -86,5 +86,5 @@ echo "Apply Git changes on top of SVN branch"
 git rebase -m -Xtheirs master || { report "Could not rebase Git changes onto SVN" ; exit 1; }
 
 echo "Commit result in SVN repository"
-{ [ -z "${GIT_SVN_PASSWORD}" ] || for n in {1..3}; do echo "${GIT_SVN_PASSWORD}"; done; } | \
+{ [ -z "${GIT_SVN_PASSWORD}" ] || for n in {1..9}; do echo "${GIT_SVN_PASSWORD}"; done; } | \
 git svn dcommit ${GIT_SVN_AUTHORS} ${GIT_SVN_USER_OPT} ${GIT_SVN_VOPT} || { report "Could not send changes to svn repository" ; exit 1; }
